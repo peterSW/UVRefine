@@ -1,5 +1,5 @@
 
-#include <OpenEXR/ImfRgbaFile.h>
+#include <ImfRgbaFile.h>
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <string>
@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	// Declare the supported options.
 	po::options_description desc("Allowed options");
 	desc.add_options()
-	    ("help", "produce help message")
+	    ("help,h", "produce help message")
 	    ("PriorNormals,p", po::value<string>(), "OpenExr image of the prior normals.")
 	    ("DiffuseIllum,i", po::value<string>(), "OpenExr image of the diffuse illumination map.")
 	    ("OutputNormals,o", po::value<string>()->default_value("outNorm.exr"),
