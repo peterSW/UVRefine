@@ -3,10 +3,10 @@
 
 inline float index2local(int index, int size)
 {
-    return index / size;
+    return (float)index / size;
 }
 
-inline float local2index(float local, int size)
+inline int local2index(float local, int size)
 {
     return local*size;
 }

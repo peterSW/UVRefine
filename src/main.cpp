@@ -138,7 +138,7 @@ public:
             testIndex(m_searchImage.indexYDec(index), curBestScore, bmI, target);
             testIndex(m_searchImage.indexYInc(index), curBestScore, bmI, target);
             testIndex(m_searchImage.indexXDec(index), curBestScore, bmI, target);
-            testIndex(m_searchImage.indexYInc(index), curBestScore, bmI, target);
+            testIndex(m_searchImage.indexXInc(index), curBestScore, bmI, target);
 
             if(bmI == index)
             {
@@ -175,7 +175,7 @@ public:
 
         index.y = local2index(curUV.g, m_searchImage.height);
         assert(index.y < m_searchImage.height);
-//        assert(index.y >= 0);
+        assert(index.y >= 0);
         if(index.y < 0)
         {
             index.y = 0;
@@ -199,13 +199,27 @@ public:
 
 };
 
+inline float sqr(float val)
+{
+    return val * val;
+}
+
 struct RgSumSqrDiff
 {
     float operator() (const Imf::Rgba &a, const Imf::Rgba &b) const
     {
-        return a.r * b.r + a.g * b.g;
+        return
+                sqr(a.r - b.r) +
+                sqr(a.g - b.g) +
+                sqr(a.b - b.b);
     }
 };
+
+ostream &operator << (ostream &out, const Imf::Rgba &rgba)
+{
+    out << "(" << rgba.r << ", " << rgba.g << ", " << rgba.b << ", " << rgba.a << ")";
+    return out;
+}
 
 int main(int argc, char *argv[])
 {
@@ -245,17 +259,22 @@ int main(int argc, char *argv[])
         }
 
         BestMatchSearchPixelFunctor<RgSumSqrDiff> uvSearchFunctor(
-                diffuseIllum, 0.0001, 10000);
+                diffuseIllum, 0.0000, 10000);
 
         for(int y(0); y < observedShad.height; ++y)
         {
             cout << "y: " << y << endl;
             for(int x(0); x < observedShad.width; ++x)
             {
+//                cout << "x: " << x << flush;
+//                cout << "  uvStart: " << curUVImage[y][x] << flush;
+//                cout << "  shading: " << observedShad[y][x] << flush;
                 uvSearchFunctor(curUVImage[y][x], observedShad[y][x]);
+//                cout << "  result UV " << curUVImage[y][x] << endl;
             }
         }
 
+        curUVImage.write(vm["OutputUV"].as<string>().c_str());
     }
     else
     {
