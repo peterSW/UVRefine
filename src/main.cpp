@@ -11,6 +11,8 @@ namespace po = boost::program_options;
 
 struct ImageRgba
 {
+    typedef Imath::Vec2<int> Index2D;
+
     typedef Imf::Rgba PixelT;
     ImageRgba(std::string filename)
     :
@@ -26,7 +28,6 @@ struct ImageRgba
         file.setFrameBuffer (pixels[0], 1, width); // 2
         file.writePixels (height); // 3
     }
-
 
     PixelT* operator [] (int y)
     {
@@ -100,6 +101,37 @@ struct ImageRgba
             return index;
         }
     }
+
+    Index2D convertUV2Index(const Imf::Rgba &curUV) const
+    {
+        Index2D index(0,0);
+        index.x = local2index(curUV.r, width);
+        assert(index.x < width);
+        assert(index.x >= 0);
+
+        index.y = local2index(curUV.g, height);
+        assert(index.y < height);
+        assert(index.y >= 0);
+        if(index.y < 0)
+        {
+            index.y = 0;
+        }
+
+        return index;
+    }
+    Imf::Rgba convertIndex2UV(const Index2D &index) const
+    {
+        Imf::Rgba uv(0,0,0);
+        uv.r = index2local(index.x, width);
+        uv.g = index2local(index.y, height);
+
+//   I        0        0     1
+//         |-----|  |-----|-----|
+//   uv    0     1  0    0.5    1
+
+        return uv;
+    }
+
     int width;
     int height;
     Imf::Array2D<PixelT> pixels;
@@ -127,8 +159,15 @@ public:
 
     void operator() (Imf::Rgba &curUV, const Imf::Rgba &target) const
     {
-        Index2D index(convertUV2Index(curUV));
+        Index2D index(m_searchImage.convertUV2Index(curUV));
 
+        fullSearch(index, target);
+
+        curUV = m_searchImage.convertIndex2UV(index);
+    }
+
+    void neighbourSearch(Index2D &index,  const Imf::Rgba &target) const
+    {
         float curBestScore(DiffFunctor()(target,m_searchImage[index]));
         for(int remainingIt(m_maxIt);
             (remainingIt && curBestScore > m_threshold);
@@ -149,9 +188,18 @@ public:
                 index = bmI;
             }
         }
-        curUV = convertIndex2UV(index);
     }
-
+    void fullSearch(Index2D &index,  const Imf::Rgba &target) const
+    {
+        float curBestScore(DiffFunctor()(target,m_searchImage[index]));
+        for(int y(0); y < m_searchImage.height; ++y)
+        {
+            for(int x(0); x < m_searchImage.width; ++x)
+            {
+                testIndex(Index2D(x,y), curBestScore, index, target);
+            }
+        }
+    }
     void testIndex(
             Index2D indexUT,
             float &curBestScore,
@@ -165,37 +213,6 @@ public:
             curBestScore = scoreUT;
         }
     }
-
-    Index2D convertUV2Index(const Imf::Rgba &curUV) const
-    {
-        Index2D index(0,0);
-        index.x = local2index(curUV.r, m_searchImage.width);
-        assert(index.x < m_searchImage.width);
-        assert(index.x >= 0);
-
-        index.y = local2index(curUV.g, m_searchImage.height);
-        assert(index.y < m_searchImage.height);
-        assert(index.y >= 0);
-        if(index.y < 0)
-        {
-            index.y = 0;
-        }
-
-        return index;
-    }
-    Imf::Rgba convertIndex2UV(const Index2D &index) const
-    {
-        Imf::Rgba uv(0,0,0);
-        uv.r = index2local(index.x, m_searchImage.width);
-        uv.g = index2local(index.y, m_searchImage.height);
-
-//   I        0        0     1
-//         |-----|  |-----|-----|
-//   uv    0     1  0    0.5    1
-
-        return uv;
-    }
-
 
 };
 
@@ -230,7 +247,8 @@ int main(int argc, char *argv[])
 	            ("PriorUV,u", po::value<string>(), "OpenExr image of the UV values.")
 	            ("DiffuseIllum,i", po::value<string>(), "OpenExr image of the diffuse illumination map.")
 	            ("OutputUV,o", po::value<string>()->default_value("outUV.exr"), "Output")
-                ("ObservedShad,s", po::value<string>(), "OpenExr image of the obserevd shading.");
+                ("ObservedShad,s", po::value<string>(), "OpenExr image of the observed shading.")
+                ("ResultShad", po::value<string>(), "Output the resultant shading.");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -275,6 +293,22 @@ int main(int argc, char *argv[])
         }
 
         curUVImage.write(vm["OutputUV"].as<string>().c_str());
+
+        if(vm.count("ResultShad"))
+        {
+            for(int y(0); y < observedShad.height; ++y)
+            {
+                cout << "y: " << y << endl;
+                for(int x(0); x < observedShad.width; ++x)
+                {
+                   observedShad[y][x] =
+                           diffuseIllum[
+                                diffuseIllum.convertUV2Index(curUVImage[y][x])
+                                       ];
+                }
+            }
+            observedShad.write(vm["ResultShad"].as<string>().c_str());
+        }
     }
     else
     {
