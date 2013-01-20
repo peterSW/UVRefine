@@ -312,25 +312,26 @@ Write {
  xpos -202
  ypos -256
 }
-Viewer {
- inputs 0
- channels rgb
- input_process false
- name Viewer2
- xpos -635
- ypos -122
-}
 push $N693b610
 Reformat {
- format "1000 500 0 0 1000 500 1 1000x500"
+ format "600 300 0 0 600 300 1 600x300"
  name Reformat1
  xpos -677
  ypos -292
 }
+set N959d110 [stack 0]
+Viewer {
+ channels rgb
+ input_process false
+ name Viewer2
+ xpos -608
+ ypos -230
+}
+push $N959d110
 Write {
  file git/UVRefine/test/SHDiffuse3Light.exr
  file_type exr
- version 2
+ version 3
  name Write2
  selected true
  xpos -604
