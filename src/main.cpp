@@ -9,9 +9,11 @@ using namespace std;
 using namespace boost::program_options;
 namespace po = boost::program_options;
 
+
+typedef Imath::Vec2<int> Index2D;
+
 struct ImageRgba
 {
-    typedef Imath::Vec2<int> Index2D;
 
     typedef Imf::Rgba PixelT;
     ImageRgba(std::string filename)
@@ -138,46 +140,84 @@ struct ImageRgba
 };
 
 template<typename DiffFunctor>
+void testIndex(
+        Index2D indexUT,
+        float &curBestScore,
+        Index2D &bmI,
+        const Imf::Rgba &target,
+        const ImageRgba &searchImage)
+{
+    float scoreUT(DiffFunctor()(target, searchImage[indexUT]));
+    if(scoreUT < curBestScore)
+    {
+        bmI = indexUT;
+        curBestScore = scoreUT;
+    }
+}
+
+template<typename SearchFunctor>
 class BestMatchSearchPixelFunctor
 {
     const ImageRgba &m_searchImage;
-    const half       m_threshold;
-    size_t            m_maxIt;
+    SearchFunctor   &m_searchFunctor;
 
 public:
-    typedef Imath::Vec2<int> Index2D;
 
     BestMatchSearchPixelFunctor(
             const ImageRgba &searchImage,
-            const half threshold,
-            const size_t maxIt)
+            SearchFunctor searchFunctor = SearchFunctor())
     :
         m_searchImage(searchImage),
-        m_threshold(threshold),
-        m_maxIt(maxIt)
+        m_searchFunctor(searchFunctor)
     {}
 
     void operator() (Imf::Rgba &curUV, const Imf::Rgba &target) const
     {
         Index2D index(m_searchImage.convertUV2Index(curUV));
 
-        fullSearch(index, target);
+        m_searchFunctor.search(index, target, m_searchImage);
 
         curUV = m_searchImage.convertIndex2UV(index);
     }
+};
 
-    void neighbourSearch(Index2D &index,  const Imf::Rgba &target) const
+template<typename DiffFunctor>
+struct FullSearch
+{
+   void search(Index2D &index,  const Imf::Rgba &target, const ImageRgba &searchImage) const
+   {
+       float curBestScore(DiffFunctor()(target,searchImage[index]));
+       for(int y(0); y < searchImage.height; ++y)
+       {
+           for(int x(0); x < searchImage.width; ++x)
+           {
+               testIndex<DiffFunctor>(Index2D(x,y), curBestScore, index, target, searchImage);
+           }
+       }
+   }
+};
+
+template<typename DiffFunctor>
+class FourNeighbourSearch
+{
+    const int m_maxIt;
+
+public:
+    FourNeighbourSearch(int maxIt)
+        :
+        m_maxIt(maxIt)
+    {}
+
+    void search(Index2D &index,  const Imf::Rgba &target, const ImageRgba &searchImage) const
     {
-        float curBestScore(DiffFunctor()(target,m_searchImage[index]));
-        for(int remainingIt(m_maxIt);
-            (remainingIt && curBestScore > m_threshold);
-            --remainingIt   )
+        float curBestScore(DiffFunctor()(target, searchImage[index]));
+        for(int remainingIt(m_maxIt); remainingIt; --remainingIt)
         {
             Index2D bmI(index);
-            testIndex(m_searchImage.indexYDec(index), curBestScore, bmI, target);
-            testIndex(m_searchImage.indexYInc(index), curBestScore, bmI, target);
-            testIndex(m_searchImage.indexXDec(index), curBestScore, bmI, target);
-            testIndex(m_searchImage.indexXInc(index), curBestScore, bmI, target);
+            testIndex<DiffFunctor>(searchImage.indexYDec(index), curBestScore, bmI, target, searchImage);
+            testIndex<DiffFunctor>(searchImage.indexYInc(index), curBestScore, bmI, target, searchImage);
+            testIndex<DiffFunctor>(searchImage.indexXDec(index), curBestScore, bmI, target, searchImage);
+            testIndex<DiffFunctor>(searchImage.indexXInc(index), curBestScore, bmI, target, searchImage);
 
             if(bmI == index)
             {
@@ -189,32 +229,8 @@ public:
             }
         }
     }
-    void fullSearch(Index2D &index,  const Imf::Rgba &target) const
-    {
-        float curBestScore(DiffFunctor()(target,m_searchImage[index]));
-        for(int y(0); y < m_searchImage.height; ++y)
-        {
-            for(int x(0); x < m_searchImage.width; ++x)
-            {
-                testIndex(Index2D(x,y), curBestScore, index, target);
-            }
-        }
-    }
-    void testIndex(
-            Index2D indexUT,
-            float &curBestScore,
-            Index2D &bmI,
-            const Imf::Rgba &target) const
-    {
-        float scoreUT(DiffFunctor()(target,m_searchImage[indexUT]));
-        if(scoreUT < curBestScore)
-        {
-            bmI = indexUT;
-            curBestScore = scoreUT;
-        }
-    }
-
 };
+
 
 inline float sqr(float val)
 {
@@ -238,6 +254,26 @@ ostream &operator << (ostream &out, const Imf::Rgba &rgba)
     return out;
 }
 
+template<typename UVSearchFunctorT>
+void refineAllUVs(
+        ImageRgba        &curUVImage,
+        const ImageRgba  &observedShad,
+        UVSearchFunctorT &uvSearchFunctor)
+{
+    for(int y(0); y < observedShad.height; ++y)
+    {
+        cout << "y: " << y << endl;
+        for(int x(0); x < observedShad.width; ++x)
+        {
+    //                cout << "x: " << x << flush;
+    //                cout << "  uvStart: " << curUVImage[y][x] << flush;
+    //                cout << "  shading: " << observedShad[y][x] << flush;
+            uvSearchFunctor(curUVImage[y][x], observedShad[y][x]);
+    //                cout << "  result UV " << curUVImage[y][x] << endl;
+        }
+    }
+}
+
 int main(int argc, char *argv[])
 {
     // Declare the supported options.
@@ -248,7 +284,9 @@ int main(int argc, char *argv[])
 	            ("DiffuseIllum,i", po::value<string>(), "OpenExr image of the diffuse illumination map.")
 	            ("OutputUV,o", po::value<string>()->default_value("outUV.exr"), "Output")
                 ("ObservedShad,s", po::value<string>(), "OpenExr image of the observed shading.")
-                ("ResultShad", po::value<string>(), "Output the resultant shading.");
+                ("ResultShad", po::value<string>(), "Output the resultant shading.")
+                ("FS", "Use full search.")
+                ("N4S", "Use iterative nearest 4 search.");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -276,20 +314,23 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        BestMatchSearchPixelFunctor<RgSumSqrDiff> uvSearchFunctor(
-                diffuseIllum, 0.0000, 10000);
-
-        for(int y(0); y < observedShad.height; ++y)
+        if(vm.count("FS"))
         {
-            cout << "y: " << y << endl;
-            for(int x(0); x < observedShad.width; ++x)
-            {
-//                cout << "x: " << x << flush;
-//                cout << "  uvStart: " << curUVImage[y][x] << flush;
-//                cout << "  shading: " << observedShad[y][x] << flush;
-                uvSearchFunctor(curUVImage[y][x], observedShad[y][x]);
-//                cout << "  result UV " << curUVImage[y][x] << endl;
-            }
+            BestMatchSearchPixelFunctor<FullSearch<RgSumSqrDiff> > uvSearchFunctor(
+                    diffuseIllum);
+            refineAllUVs(curUVImage, observedShad, uvSearchFunctor);
+        }
+        else if(vm.count("N4S"))
+        {
+            BestMatchSearchPixelFunctor<FourNeighbourSearch<RgSumSqrDiff> > uvSearchFunctor(
+                    diffuseIllum,
+                    FourNeighbourSearch<RgSumSqrDiff>(1000));
+            refineAllUVs(curUVImage, observedShad, uvSearchFunctor);
+        }
+        else
+        {
+            cout << "A search method must be specified\n" << desc  << "\n";
+            return 1;
         }
 
         curUVImage.write(vm["OutputUV"].as<string>().c_str());
@@ -313,6 +354,7 @@ int main(int argc, char *argv[])
     else
     {
         cout << "Invalid options!!!\n" << desc  << "\n";
+        return 1;
     }
 
     return 0;
