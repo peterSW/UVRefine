@@ -314,7 +314,7 @@ Write {
 }
 push $N693b610
 Reformat {
- format "600 300 0 0 600 300 1 600x300"
+ format "100 50 0 0 100 50 1 100x50"
  name Reformat1
  xpos -677
  ypos -292
@@ -327,11 +327,26 @@ Viewer {
  xpos -608
  ypos -230
 }
-push $N959d110
+push $N693b610
+Reformat {
+ format "600 300 0 0 600 300 1 600x300"
+ name Reformat2
+ xpos -862
+ ypos -262
+}
 Write {
  file git/UVRefine/test/SHDiffuse3Light.exr
  file_type exr
  version 3
+ name Write5
+ xpos -789
+ ypos -251
+}
+push $N959d110
+Write {
+ file git/UVRefine/test/SHDiffuse3Light_100x50.exr
+ file_type exr
+ version 4
  name Write2
  selected true
  xpos -604
