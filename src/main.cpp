@@ -1,4 +1,5 @@
 #include "ReadExr.h"
+#include "uvConvert.h"
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <string>
@@ -168,21 +169,25 @@ public:
     Index2D convertUV2Index(const Imf::Rgba &curUV) const
     {
         Index2D index(0,0);
-        index.x = (curUV.r-0.5/m_searchImage.width)*(m_searchImage.width);
+        index.x = local2index(curUV.r, m_searchImage.width);
         assert(index.x < m_searchImage.width);
-        assert(index.x > 0);
+        assert(index.x >= 0);
 
-        index.y = (curUV.g-0.5/m_searchImage.height)*(m_searchImage.width);
+        index.y = local2index(curUV.g, m_searchImage.height);
         assert(index.y < m_searchImage.height);
-        assert(index.y > 0);
+//        assert(index.y >= 0);
+        if(index.y < 0)
+        {
+            index.y = 0;
+        }
 
         return index;
     }
     Imf::Rgba convertIndex2UV(const Index2D &index) const
     {
         Imf::Rgba uv(0,0,0);
-        uv.r = (float)(index.x / (m_searchImage.width )) + 0.5 / m_searchImage.width;
-        uv.g = (float)(index.y / (m_searchImage.height)) + 0.5 / m_searchImage.height;
+        uv.r = index2local(index.x, m_searchImage.width);
+        uv.g = index2local(index.y, m_searchImage.height);
 
 //   I        0        0     1
 //         |-----|  |-----|-----|
@@ -230,6 +235,15 @@ int main(int argc, char *argv[])
         ImageRgba diffuseIllum(vm["DiffuseIllum"].as<string>().c_str());
         ImageRgba observedShad(vm["ObservedShad"].as<string>().c_str());
 
+        if(curUVImage.width != observedShad.width ||
+            curUVImage.height != observedShad.height     )
+        {
+            cerr << "ObservedShad must be the same size as PriorUV!\n";
+            cerr << "ObservedShad: " << observedShad.width << ", " << observedShad.height << "\n";
+            cerr << "curUVImage:   " << curUVImage.width << ", " << curUVImage.height << "\n";
+            return 1;
+        }
+
         BestMatchSearchPixelFunctor<RgSumSqrDiff> uvSearchFunctor(
                 diffuseIllum, 0.0001, 10000);
 
@@ -238,7 +252,7 @@ int main(int argc, char *argv[])
             cout << "y: " << y << endl;
             for(int x(0); x < observedShad.width; ++x)
             {
-                uvSearchFunctor(curUVImage[x][y], observedShad[x][y]);
+                uvSearchFunctor(curUVImage[y][x], observedShad[y][x]);
             }
         }
 
