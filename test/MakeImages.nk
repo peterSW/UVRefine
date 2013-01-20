@@ -13,9 +13,8 @@ define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
                 <split size="602"></split>
                 <splitter orientation="2">
                     <split size="272"></split>
-                    <dock id="" activePageId="Viewer.2">
+                    <dock id="" activePageId="Viewer.1">
                         <page id="Viewer.1"></page>
-                        <page id="Viewer.2"></page>
                     </dock>
                     <split size="272"></split>
                     <dock id="" activePageId="DAG.1">
@@ -62,7 +61,7 @@ Read {
  xpos -724
  ypos -253
 }
-set N75d9b40 [stack 0]
+set N693b610 [stack 0]
 Viewer {
  channels rgb
  input_process false
@@ -70,7 +69,7 @@ Viewer {
  xpos -786
  ypos -140
 }
-push $N75d9b40
+push $N693b610
 add_layer {PriorNormals PriorNormals.x PriorNormals.y PriorNormals.z}
 Constant {
  inputs 0
@@ -175,13 +174,13 @@ Expression {
  xpos -325
  ypos -380
 }
-set N3f5ccf0 [stack 0]
+set N79aee00 [stack 0]
 Dot {
  name Dot1
  xpos -310
  ypos -296
 }
-push $N75d9b40
+push $N693b610
 STMap {
  inputs 2
  channels rgb
@@ -190,7 +189,7 @@ STMap {
  xpos -344
  ypos -237
 }
-set N3f66fb0 [stack 0]
+set N79b90c0 [stack 0]
 Copy {
  inputs 2
  from0 -rgba.alpha
@@ -217,8 +216,8 @@ NormalRefineColour {
  xpos -451
  ypos -126
 }
-set N3f74500 [stack 0]
-push $N75d9b40
+set N3298850 [stack 0]
+push $N693b610
 STMap {
  inputs 2
  channels rgb
@@ -227,7 +226,7 @@ STMap {
  xpos -549
  ypos -44
 }
-push $N3f66fb0
+push $N79b90c0
 Difference {
  inputs 2
  name Difference1
@@ -241,8 +240,8 @@ Viewer {
  xpos -487
  ypos 18
 }
-push $N75d9b40
-push $N3f66fb0
+push $N693b610
+push $N79b90c0
 NormalRefineColour {
  inputs 2
  AIrr rgb
@@ -260,7 +259,7 @@ NormalRefineColour {
  xpos -281
  ypos -125
 }
-push $N3f74500
+push $N3298850
 push 0
 Merge2 {
  inputs 2
@@ -271,25 +270,7 @@ Merge2 {
  xpos -281
  ypos -59
 }
-push $N75d9b40
-Write {
- file git/UVRefine/test/SphereLit.exr
- file_type exr
- version 2
- name Write1
- xpos -637
- ypos -84
-}
-push $N3f66fb0
-Write {
- file git/UVRefine/test/SHDiffuse3Light.exr
- file_type exr
- version 1
- name Write2
- xpos -246
- ypos -242
-}
-push $N3f5ccf0
+push $N79aee00
 Shuffle {
  in diffuseUV
  blue black
@@ -298,14 +279,6 @@ Shuffle {
  xpos -142
  ypos -369
 }
-set Nb454640 [stack 0]
-Viewer {
- input_process false
- name Viewer3
- xpos -57
- ypos -309
-}
-push $Nb454640
 Write {
  file git/UVRefine/test/UVGroundTruth.exr
  file_type exr
@@ -327,7 +300,32 @@ Write {
  file_type exr
  version 3
  name Write4
- selected true
  xpos 83
  ypos -285
+}
+push $N693b610
+Write {
+ file git/UVRefine/test/SHDiffuse3Light.exr
+ file_type exr
+ version 1
+ name Write2
+ xpos -604
+ ypos -281
+}
+push $N79b90c0
+Viewer {
+ input_process false
+ name Viewer3
+ xpos -57
+ ypos -309
+}
+push $N79b90c0
+Write {
+ file git/UVRefine/test/SphereLit.exr
+ file_type exr
+ version 3
+ name Write1
+ selected true
+ xpos -202
+ ypos -256
 }
