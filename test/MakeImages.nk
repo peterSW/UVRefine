@@ -1,0 +1,333 @@
+#! /opt/FOUNDRYnuke/6.0/Nuke6.0 -nx
+version 6.0 v3
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="0" y="24" w="1024" h="576" screen="0">
+        <splitter orientation="1">
+            <split size="646"></split>
+            <splitter orientation="1">
+                <split size="40"></split>
+                <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                    <page id="Toolbar.1"></page>
+                </dock>
+                <split size="602"></split>
+                <splitter orientation="2">
+                    <split size="272"></split>
+                    <dock id="" activePageId="Viewer.2">
+                        <page id="Viewer.1"></page>
+                        <page id="Viewer.2"></page>
+                    </dock>
+                    <split size="272"></split>
+                    <dock id="" activePageId="DAG.1">
+                        <page id="DAG.1"></page>
+                        <page id="Curve Editor.1"></page>
+                    </dock>
+                </splitter>
+            </splitter>
+            <split size="374"></split>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"></page>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name /user/cvssppgr/pw00001/git/UVRefine/test/MakeImages.nk
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode1
+ tile_color 0x8e8e3800
+ note_font_size 42
+ xpos -775
+ ypos -615
+ bdwidth 571
+ bdheight 289
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {0.6669999957 0.2709999979 0.1019999981 0}
+ name Constant5
+ xpos -1044
+ ypos -262
+}
+Read {
+ inputs 0
+ file /home/cvssp2/pgr/pw00001/links/NormalRefinement/TestGradDescent/3colourSHDiff.hdr
+ format "2560 1280 0 0 2560 1280 1 "
+ name Read1
+ xpos -724
+ ypos -253
+}
+set N75d9b40 [stack 0]
+Viewer {
+ channels rgb
+ input_process false
+ name Viewer2
+ xpos -786
+ ypos -140
+}
+push $N75d9b40
+add_layer {PriorNormals PriorNormals.x PriorNormals.y PriorNormals.z}
+Constant {
+ inputs 0
+ channels PriorNormals
+ color {1 0 0 0}
+ name Constant4
+ xpos -493
+ ypos -229
+}
+Camera2 {
+ inputs 0
+ translate {5 0 0}
+ rotate {0 90 0}
+ name Camera1
+ xpos -463
+ ypos -532
+}
+Constant {
+ inputs 0
+ channels rgb
+ color 0.5
+ name Constant3
+ xpos -765
+ ypos -469
+}
+Card2 {
+ z 4
+ rotate {0 90 0}
+ scaling {10 10 1}
+ uniform_scale 10
+ control_points {3 3 3 6 
+
+1 {-0.5 -0.5 0} 0 {0.1666666865 0 0} 0 {0 0 0} 0 {0 0.1666666865 0} 0 {0 0 0} 0 {0 0 0} 
+1 {0 -0.5 0} 0 {0.1666666716 0 0} 0 {-0.1666666716 0 0} 0 {0 0.1666666865 0} 0 {0 0 0} 0 {0.5 0 0} 
+1 {0.5 -0.5 0} 0 {0 0 0} 0 {-0.1666666865 0 0} 0 {0 0.1666666865 0} 0 {0 0 0} 0 {1 0 0} 
+1 {-0.5 0 0} 0 {0.1666666865 0 0} 0 {0 0 0} 0 {0 0.1666666716 0} 0 {0 -0.1666666716 0} 0 {0 0.5 0} 
+1 {0 0 0} 0 {0.1666666716 0 0} 0 {-0.1666666716 0 0} 0 {0 0.1666666716 0} 0 {0 -0.1666666716 0} 0 {0.5 0.5 0} 
+1 {0.5 0 0} 0 {0 0 0} 0 {-0.1666666865 0 0} 0 {0 0.1666666716 0} 0 {0 -0.1666666716 0} 0 {1 0.5 0} 
+1 {-0.5 0.5 0} 0 {0.1666666865 0 0} 0 {0 0 0} 0 {0 0 0} 0 {0 -0.1666666865 0} 0 {0 1 0} 
+1 {0 0.5 0} 0 {0.1666666716 0 0} 0 {-0.1666666716 0 0} 0 {0 0 0} 0 {0 -0.1666666865 0} 0 {0.5 1 0} 
+1 {0.5 0.5 0} 0 {0 0 0} 0 {-0.1666666865 0 0} 0 {0 0 0} 0 {0 -0.1666666865 0} 0 {1 1 0} }
+ name Card1
+ xpos -591
+ ypos -435
+}
+Constant {
+ inputs 0
+ channels rgb
+ color 1
+ name Constant1
+ xpos -570
+ ypos -533
+}
+Sphere {
+ radius 0.52
+ name Sphere1
+ xpos -518
+ ypos -467
+}
+Scene {
+ inputs 2
+ name Scene1
+ xpos -553
+ ypos -396
+}
+Constant {
+ inputs 0
+ channels rgb
+ name Constant2
+ xpos -294
+ ypos -535
+}
+add_layer {Normals Normals.x Normals.y Normals.z}
+ScanlineRender {
+ inputs 3
+ output_motion_vectors false
+ output_shader_vectors true
+ N_channel Normals
+ name ScanlineRender1
+ xpos -408
+ ypos -467
+}
+add_layer {diffuseUV diffuseUV.u diffuseUV.v}
+Expression {
+ temp_name0 vAng
+ temp_expr0 acos(-Normals.y)
+ temp_name3 hAng
+ temp_expr3 atan2(Normals.x,Normals.z)
+ channel0 {-diffuseUV.u diffuseUV.v}
+ expr0 vAng/pi
+ channel1 none
+ channel2 {diffuseUV.u -diffuseUV.v}
+ expr2 (hAng)/2/pi
+ name diifuseUV_calc
+ xpos -325
+ ypos -408
+}
+Expression {
+ channel0 {diffuseUV.u -diffuseUV.v}
+ expr0 (diffuseUV.u+100)%1
+ name modU1
+ xpos -325
+ ypos -380
+}
+set N3f5ccf0 [stack 0]
+Dot {
+ name Dot1
+ xpos -310
+ ypos -296
+}
+push $N75d9b40
+STMap {
+ inputs 2
+ channels rgb
+ uv diffuseUV
+ name STMap1
+ xpos -344
+ ypos -237
+}
+set N3f66fb0 [stack 0]
+Copy {
+ inputs 2
+ from0 -rgba.alpha
+ to0 -rgba.alpha
+ channels PriorNormals
+ name Copy1
+ xpos -385
+ ypos -192
+}
+NormalRefineColour {
+ inputs 2
+ AIrr rgb
+ envIrr rgb
+ priorNormals PriorNormals
+ outNormals Normals
+ outUV diffuseUV
+ maxIter 1
+ dSize 0.035
+ minStepSize 0.0001
+ accel 1.1
+ stopThres 0.001
+ sqrDist false
+ name NormalRefineColour1
+ xpos -451
+ ypos -126
+}
+set N3f74500 [stack 0]
+push $N75d9b40
+STMap {
+ inputs 2
+ channels rgb
+ uv diffuseUV
+ name STMap2
+ xpos -549
+ ypos -44
+}
+push $N3f66fb0
+Difference {
+ inputs 2
+ name Difference1
+ xpos -363
+ ypos -31
+}
+Viewer {
+ gain 2.83
+ input_process false
+ name Viewer1
+ xpos -487
+ ypos 18
+}
+push $N75d9b40
+push $N3f66fb0
+NormalRefineColour {
+ inputs 2
+ AIrr rgb
+ envIrr rgb
+ priorNormals PriorNormals
+ outNormals Normals
+ outUV diffuseUV
+ maxIter {{NormalRefineColour1.maxIter-1}}
+ dSize 0.035
+ minStepSize 0.0001
+ accel 1.1
+ stopThres 0.001
+ sqrDist false
+ name NormalRefineColour2
+ xpos -281
+ ypos -125
+}
+push $N3f74500
+push 0
+Merge2 {
+ inputs 2
+ operation minus
+ Achannels diffuseUV
+ Bchannels diffuseUV
+ name Merge1
+ xpos -281
+ ypos -59
+}
+push $N75d9b40
+Write {
+ file git/UVRefine/test/SphereLit.exr
+ file_type exr
+ version 2
+ name Write1
+ xpos -637
+ ypos -84
+}
+push $N3f66fb0
+Write {
+ file git/UVRefine/test/SHDiffuse3Light.exr
+ file_type exr
+ version 1
+ name Write2
+ xpos -246
+ ypos -242
+}
+push $N3f5ccf0
+Shuffle {
+ in diffuseUV
+ blue black
+ alpha white
+ name Shuffle1
+ xpos -142
+ ypos -369
+}
+set Nb454640 [stack 0]
+Viewer {
+ input_process false
+ name Viewer3
+ xpos -57
+ ypos -309
+}
+push $Nb454640
+Write {
+ file git/UVRefine/test/UVGroundTruth.exr
+ file_type exr
+ version 2
+ name Write3
+ xpos -142
+ ypos -295
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {0.25 0.5 0 1}
+ name Constant6
+ xpos 23
+ ypos -386
+}
+Write {
+ file git/UVRefine/test/UVStartFromFlat.exr
+ file_type exr
+ version 3
+ name Write4
+ selected true
+ xpos 83
+ ypos -285
+}
