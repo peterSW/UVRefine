@@ -2,6 +2,8 @@
 #define UVCONVERT_H_
 
 #include <ImathVec.h>
+#include <boost/math/constants/constants.hpp>
+const double pi = boost::math::constants::pi<float>();
 
 inline float index2local(int index, int size)
 {
@@ -17,8 +19,8 @@ Imath::V2f
 NormalToWorldUV(const Imath::V3f &normal)
 {
     Imath::V2f uv;
-  uv.x = ((atan2(normal.x, normal.z) / (2.0f * M_PI_F)));
-  uv.y = acos(-normal.y) / M_PI_F;
+  uv.x = ((atan2(normal.x, normal.z) / (2.0f * pi)));
+  uv.y = acos(-normal.y) / pi;
 
   uv.x = fmod(uv.x + 10.0f, 1.0f);
 
@@ -29,8 +31,8 @@ Imath::V3f
 WorldUVToNormal(const Imath::V2f &envUV)
 {
 
-  float hAng(envUV.x * 2.0 * M_PI_F);
-  float vAng(envUV.y * M_PI_F);
+  float hAng(envUV.x * 2.0 * pi);
+  float vAng(envUV.y * pi);
 
   Imath::V3f normal;
   normal.x = sin(hAng) * sin(vAng);
