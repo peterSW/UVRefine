@@ -114,8 +114,12 @@ struct ImageRgba
     {
         Index2D index(0,0);
         index.x = local2index(curUV.r, width);
+        if(index.x >= width)
+        {
+            index = 0;
+        }
         assert(index.x < width);
-        assert(index.x >= 0);
+//        assert(index.x >= 0);
 
         index.y = local2index(curUV.g, height);
         assert(index.y < height);
