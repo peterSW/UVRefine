@@ -116,7 +116,7 @@ struct ImageRgba
         index.x = local2index(curUV.r, width);
         if(index.x >= width)
         {
-            index = 0;
+            index.x = 0;
         }
         assert(index.x < width);
 //        assert(index.x >= 0);
