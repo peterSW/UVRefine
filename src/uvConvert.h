@@ -2,6 +2,7 @@
 #define UVCONVERT_H_
 
 #include <ImathVec.h>
+#include <ImfRgba.h>
 #include <boost/math/constants/constants.hpp>
 const double pi = boost::math::constants::pi<float>();
 
@@ -15,7 +16,7 @@ inline int local2index(float local, int size)
     return local*size;
 }
 
-Imath::V2f
+inline Imath::V2f
 NormalToWorldUV(const Imath::V3f &normal)
 {
     Imath::V2f uv;
@@ -27,7 +28,8 @@ NormalToWorldUV(const Imath::V3f &normal)
   return uv;
 }
 
-Imath::V3f
+
+inline Imath::V3f
 WorldUVToNormal(const Imath::V2f &envUV)
 {
 
@@ -42,4 +44,11 @@ WorldUVToNormal(const Imath::V2f &envUV)
   return normal;
 }
 
+
+
+inline Imath::V3f
+WorldUVToNormal(const Imf::Rgba &envUV)
+{
+    return WorldUVToNormal(Imath::V2f(envUV.r, envUV.g));
+}
 #endif /* UVCONVERT_H_ */

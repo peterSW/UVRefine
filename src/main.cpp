@@ -71,6 +71,37 @@ struct FullSearch
 };
 
 template<typename DiffFunctor>
+struct NormDotWeightedFullSearch
+{
+   void search(Index2D &index,  const Imf::Rgba &target, const ImageRgba &searchImage) const
+   {
+       Imath::V3f priorNormal(WorldUVToNormal(searchImage.convertIndex2UV(index)));
+       Index2D bmI(index);
+
+       float curBestScore(DiffFunctor()(target,searchImage[index]));
+       for(int y(0); y < searchImage.height; ++y)
+       {
+           for(int x(0); x < searchImage.width; ++x)
+           {
+               Index2D indexUT(x,y);
+               float normDot(WorldUVToNormal(searchImage.convertIndex2UV(index)).dot(priorNormal));
+
+               if(normDot > 0)
+               {
+                   float scoreUT(DiffFunctor()(target, searchImage[indexUT])/normDot);
+                   if(scoreUT < curBestScore)
+                   {
+                       bmI = indexUT;
+                       curBestScore = scoreUT;
+                   }
+               }
+           }
+       }
+   }
+};
+
+
+template<typename DiffFunctor>
 class FourNeighbourSearch
 {
     const int m_maxIt;
@@ -155,7 +186,9 @@ int main(int argc, char *argv[])
                 ("ObservedShad,s", po::value<string>(), "OpenExr image of the observed shading.")
                 ("ResultShad", po::value<string>(), "Output the resultant shading.")
                 ("FS", "Use full search.")
+                ("NWFS", "Use normal dot proir full search.")
                 ("N4S", "Use iterative nearest 4 search.");
+
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -186,6 +219,12 @@ int main(int argc, char *argv[])
         if(vm.count("FS"))
         {
             BestMatchSearchPixelFunctor<FullSearch<RgbSumSqrDiff> > uvSearchFunctor(
+                    diffuseIllum);
+            refineAllUVs(curUVImage, observedShad, uvSearchFunctor);
+        }
+        else if(vm.count("NWFS"))
+        {
+            BestMatchSearchPixelFunctor<NormDotWeightedFullSearch<RgbSumSqrDiff> > uvSearchFunctor(
                     diffuseIllum);
             refineAllUVs(curUVImage, observedShad, uvSearchFunctor);
         }
