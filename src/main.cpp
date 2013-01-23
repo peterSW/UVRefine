@@ -84,7 +84,7 @@ struct NormDotWeightedFullSearch
            for(int x(0); x < searchImage.width; ++x)
            {
                Index2D indexUT(x,y);
-               float normDot(WorldUVToNormal(searchImage.convertIndex2UV(index)).dot(priorNormal));
+               float normDot(WorldUVToNormal(searchImage.convertIndex2UV(indexUT)).dot(priorNormal));
 
                if(normDot > 0)
                {
