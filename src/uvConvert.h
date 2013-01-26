@@ -1,20 +1,13 @@
 #ifndef UVCONVERT_H_
 #define UVCONVERT_H_
 
+#include "IndexLocalConversion.h"
 #include <ImathVec.h>
 #include <ImfRgba.h>
 #include <boost/math/constants/constants.hpp>
 const double pi = boost::math::constants::pi<float>();
 
-inline float index2local(int index, int size)
-{
-    return (float)index / size;
-}
-
-inline int local2index(float local, int size)
-{
-    return local*size;
-}
+using namespace MidMapped;
 
 inline Imath::V2f
 NormalToWorldUV(const Imath::V3f &normal)

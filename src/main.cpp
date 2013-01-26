@@ -76,7 +76,6 @@ struct NormDotWeightedFullSearch
    void search(Index2D &index,  const Imf::Rgba &target, const ImageRgba &searchImage) const
    {
        Imath::V3f priorNormal(WorldUVToNormal(searchImage.convertIndex2UV(index)));
-       Index2D bmI(index);
 
        float curBestScore(DiffFunctor()(target,searchImage[index]));
        for(int y(0); y < searchImage.height; ++y)
@@ -86,12 +85,12 @@ struct NormDotWeightedFullSearch
                Index2D indexUT(x,y);
                float normDot(WorldUVToNormal(searchImage.convertIndex2UV(indexUT)).dot(priorNormal));
 
-               if(normDot > 0)
+//               if(normDot > 0)
                {
-                   float scoreUT(DiffFunctor()(target, searchImage[indexUT])/normDot);
+                   float scoreUT(DiffFunctor()(target, searchImage[indexUT]) - cos(acos(normDot)/2.0));
                    if(scoreUT < curBestScore)
                    {
-                       bmI = indexUT;
+                       index = indexUT;
                        curBestScore = scoreUT;
                    }
                }
