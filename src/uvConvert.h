@@ -7,8 +7,6 @@
 #include <boost/math/constants/constants.hpp>
 const double pi = boost::math::constants::pi<float>();
 
-using namespace MidMapped;
-
 inline Imath::V2f
 NormalToWorldUV(const Imath::V3f &normal)
 {

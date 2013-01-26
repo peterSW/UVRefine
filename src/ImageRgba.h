@@ -113,7 +113,7 @@ struct ImageRgba
     Index2D convertUV2Index(const Imf::Rgba &curUV) const
     {
         Index2D index(0,0);
-        index.x = local2index(curUV.r, width);
+        index.x = MidMapped::local2index(curUV.r, width);
         if(index.x >= width)
         {
             index.x = 0;
@@ -121,7 +121,7 @@ struct ImageRgba
         assert(index.x < width);
 //        assert(index.x >= 0);
 
-        index.y = local2index(curUV.g, height);
+        index.y = MidMapped::local2index(curUV.g, height);
         assert(index.y < height);
         assert(index.y >= 0);
         if(index.y < 0)
@@ -134,8 +134,8 @@ struct ImageRgba
     Imf::Rgba convertIndex2UV(const Index2D &index) const
     {
         Imf::Rgba uv(0,0,0);
-        uv.r = index2local(index.x, width);
-        uv.g = index2local(index.y, height);
+        uv.r = MidMapped::index2local(index.x, width);
+        uv.g = MidMapped::index2local(index.y, height);
 
 //   I        0        0     1
 //         |-----|  |-----|-----|

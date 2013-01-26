@@ -87,7 +87,7 @@ struct NormDotWeightedFullSearch
 
 //               if(normDot > 0)
                {
-                   float scoreUT(DiffFunctor()(target, searchImage[indexUT]) - cos(acos(normDot)/2.0));
+                   float scoreUT(DiffFunctor()(target, searchImage[indexUT]) + acos(normDot)/10.0));
                    if(scoreUT < curBestScore)
                    {
                        index = indexUT;
@@ -244,6 +244,7 @@ int main(int argc, char *argv[])
 
         if(vm.count("ResultShad"))
         {
+            cout << "Calcualting shading result:" << flush;
             for(int y(0); y < observedShad.height; ++y)
             {
                 cout << "y: " << y << endl;
