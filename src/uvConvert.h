@@ -42,4 +42,11 @@ WorldUVToNormal(const Imf::Rgba &envUV)
 {
     return WorldUVToNormal(Imath::V2f(envUV.r, envUV.g));
 }
+
+inline float
+angularDist(Imath::V3f a, Imath::V3f b)
+{
+    return acos(a.dot(b));
+}
+
 #endif /* UVCONVERT_H_ */

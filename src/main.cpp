@@ -73,6 +73,14 @@ struct FullSearch
 template<typename DiffFunctor>
 struct NormDotWeightedFullSearch
 {
+
+    float m_normWeight;
+
+    NormDotWeightedFullSearch(float normalWeight)
+        :
+        m_normWeight(normalWeight)
+    {}
+
    void search(Index2D &index,  const Imf::Rgba &target, const ImageRgba &searchImage) const
    {
        Imath::V3f priorNormal(WorldUVToNormal(searchImage.convertIndex2UV(index)));
@@ -83,11 +91,14 @@ struct NormDotWeightedFullSearch
            for(int x(0); x < searchImage.width; ++x)
            {
                Index2D indexUT(x,y);
-               float normDot(WorldUVToNormal(searchImage.convertIndex2UV(indexUT)).dot(priorNormal));
 
 //               if(normDot > 0)
                {
-                   float scoreUT(DiffFunctor()(target, searchImage[indexUT]) + acos(normDot)/10.0));
+                   float shadDiff(DiffFunctor()(target, searchImage[indexUT]));
+                   float normAngle(angularDist(priorNormal, WorldUVToNormal(searchImage.convertIndex2UV(indexUT))));
+//                   cout << "D: " << shadDiff << "  A: " << normAngle << endl;
+
+                   float scoreUT(shadDiff + normAngle/100.0);
                    if(scoreUT < curBestScore)
                    {
                        index = indexUT;
@@ -97,6 +108,7 @@ struct NormDotWeightedFullSearch
            }
        }
    }
+
 };
 
 
@@ -186,6 +198,7 @@ int main(int argc, char *argv[])
                 ("ResultShad", po::value<string>(), "Output the resultant shading.")
                 ("FS", "Use full search.")
                 ("NWFS", "Use normal dot proir full search.")
+                ("normWeight", po::value<float>()->default_value(0.001), "The weighting of the normal.")
                 ("N4S", "Use iterative nearest 4 search.");
 
 
@@ -224,7 +237,8 @@ int main(int argc, char *argv[])
         else if(vm.count("NWFS"))
         {
             BestMatchSearchPixelFunctor<NormDotWeightedFullSearch<RgbSumSqrDiff> > uvSearchFunctor(
-                    diffuseIllum);
+                    diffuseIllum,
+                    NormDotWeightedFullSearch<RgbSumSqrDiff>(vm["normWeight"].as<float>()));
             refineAllUVs(curUVImage, observedShad, uvSearchFunctor);
         }
         else if(vm.count("N4S"))
