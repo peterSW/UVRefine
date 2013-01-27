@@ -16,6 +16,14 @@ struct ImageRgba
     int height;
     Imf::Array2D<PixelT> pixels;
 
+    ImageRgba(int width, int height)
+    :
+        width(width),
+        height(height),
+        pixels(width,height)
+    {
+    }
+
     ImageRgba(std::string filename)
     :
         width(0),
