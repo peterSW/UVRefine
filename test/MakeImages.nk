@@ -2,29 +2,29 @@
 version 6.0 v3
 define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
 <layout version="1.0">
-    <window x="0" y="24" w="1024" h="576" screen="0">
+    <window x="-8" y="-4" w="1296" h="1036" screen="0">
         <splitter orientation="1">
-            <split size="646"></split>
+            <split size="652"></split>
             <splitter orientation="1">
                 <split size="40"></split>
                 <dock id="" hideTitles="1" activePageId="Toolbar.1">
                     <page id="Toolbar.1"></page>
                 </dock>
-                <split size="602"></split>
+                <split size="608"></split>
                 <splitter orientation="2">
-                    <split size="272"></split>
+                    <split size="484"></split>
                     <dock id="" activePageId="Viewer.2">
                         <page id="Viewer.1"></page>
                         <page id="Viewer.2"></page>
                     </dock>
-                    <split size="272"></split>
+                    <split size="484"></split>
                     <dock id="" activePageId="DAG.1">
                         <page id="DAG.1"></page>
                         <page id="Curve Editor.1"></page>
                     </dock>
                 </splitter>
             </splitter>
-            <split size="374"></split>
+            <split size="624"></split>
             <dock id="" activePageId="Properties.1">
                 <page id="Properties.1"></page>
             </dock>
@@ -56,13 +56,30 @@ Constant {
 }
 Read {
  inputs 0
+ file /home/cvssp2/pgr/pw00001/git/UVRefine/test/Studio-bluebox1000x500.exr
+ format "2048 1556 0 0 2048 1556 1 2K_Super_35(full-ap)"
+ raw true
+ name Read2
+ xpos -831
+ ypos -118
+}
+Read {
+ inputs 0
  file /home/cvssp2/pgr/pw00001/links/NormalRefinement/TestGradDescent/3colourSHDiff.hdr
  format "2560 1280 0 0 2560 1280 1 "
  name Read1
  xpos -720
  ypos -187
 }
-set N693b610 [stack 0]
+set N605c230 [stack 0]
+Switch {
+ inputs 2
+ which {{frame-1}}
+ name Switch1
+ xpos -720
+ ypos -99
+}
+set Nc674860 [stack 0]
 add_layer {PriorNormals PriorNormals.x PriorNormals.y PriorNormals.z}
 Constant {
  inputs 0
@@ -167,13 +184,22 @@ Expression {
  xpos -325
  ypos -380
 }
-set N79aee00 [stack 0]
+Crop {
+ box {170 84 474 394}
+ reformat true
+ crop false
+ name Crop1
+ xpos -325
+ ypos -352
+}
+set Cc093d00 [stack 0]
+set Nc093d00 [stack 0]
 Dot {
  name Dot1
  xpos -310
  ypos -296
 }
-push $N693b610
+push $Nc674860
 STMap {
  inputs 2
  channels rgb
@@ -182,7 +208,7 @@ STMap {
  xpos -344
  ypos -237
 }
-set N79b90c0 [stack 0]
+set N60cda70 [stack 0]
 Copy {
  inputs 2
  from0 -rgba.alpha
@@ -209,8 +235,8 @@ NormalRefineColour {
  xpos -451
  ypos -126
 }
-set N3298850 [stack 0]
-push $N693b610
+set N60daf80 [stack 0]
+push $Nc674860
 STMap {
  inputs 2
  channels rgb
@@ -219,7 +245,7 @@ STMap {
  xpos -549
  ypos -44
 }
-push $N79b90c0
+push $N60cda70
 Difference {
  inputs 2
  name Difference1
@@ -233,8 +259,8 @@ Viewer {
  xpos -487
  ypos 18
 }
-push $N693b610
-push $N79b90c0
+push $Nc674860
+push $N60cda70
 NormalRefineColour {
  inputs 2
  AIrr rgb
@@ -252,7 +278,7 @@ NormalRefineColour {
  xpos -281
  ypos -125
 }
-push $N3298850
+push $N60daf80
 push 0
 Merge2 {
  inputs 2
@@ -263,22 +289,30 @@ Merge2 {
  xpos -281
  ypos -59
 }
-push $N79aee00
-Shuffle {
- in diffuseUV
- blue black
- alpha white
- name Shuffle1
- xpos -142
- ypos -369
+push $Nc674860
+Reformat {
+ format "100 50 0 0 100 50 1 100x50"
+ name Reformat1
+ xpos -677
+ ypos -292
 }
-Write {
- file git/UVRefine/test/UVGroundTruth.exr
- file_type exr
- version 2
- name Write3
- xpos -142
- ypos -295
+set N6148c80 [stack 0]
+Viewer {
+ frame 1
+ channels rgb
+ input_process false
+ name Viewer2
+ xpos -608
+ ypos -230
+}
+push $N60cda70
+Viewer {
+ frame 1
+ gain 0.35
+ input_process false
+ name Viewer3
+ xpos -86
+ ypos -216
 }
 Constant {
  inputs 0
@@ -288,46 +322,21 @@ Constant {
  xpos 23
  ypos -386
 }
+clone $Cc093d00 {
+ xpos 23
+ ypos -312
+ selected false
+}
 Write {
- file git/UVRefine/test/UVStartFromFlat.exr
+ file UVStartFromFlat.exr
+ raw true
  file_type exr
- version 3
+ version 4
  name Write4
  xpos 83
  ypos -285
 }
-push $N79b90c0
-Viewer {
- input_process false
- name Viewer3
- xpos -57
- ypos -309
-}
-push $N79b90c0
-Write {
- file git/UVRefine/test/SphereLit.exr
- file_type exr
- version 3
- name Write1
- xpos -202
- ypos -256
-}
-push $N693b610
-Reformat {
- format "100 50 0 0 100 50 1 100x50"
- name Reformat1
- xpos -677
- ypos -292
-}
-set N959d110 [stack 0]
-Viewer {
- channels rgb
- input_process false
- name Viewer2
- xpos -608
- ypos -230
-}
-push $N693b610
+push $Nc674860
 Reformat {
  format "600 300 0 0 600 300 1 600x300"
  name Reformat2
@@ -335,20 +344,58 @@ Reformat {
  ypos -262
 }
 Write {
- file git/UVRefine/test/SHDiffuse3Light.exr
- file_type exr
- version 3
- name Write5
- xpos -789
- ypos -251
-}
-push $N959d110
-Write {
- file git/UVRefine/test/SHDiffuse3Light_100x50.exr
+ file SHDiffuse3Light_600x300_%02d.exr
+ raw true
  file_type exr
  version 4
+ name Write5
+ xpos -752
+ ypos -262
+}
+push $N605c230
+Write {
+ file SHDiffuse3Light_600x300_%02d.exr
+ raw true
+ file_type exr
+ version 4
+ name Write6
+ xpos -830
+ ypos -167
+}
+push $Nc093d00
+Shuffle {
+ in diffuseUV
+ blue black
+ alpha white
+ name Shuffle1
+ xpos -142
+ ypos -369
+}
+Write {
+ file UVGroundTruth.exr
+ raw true
+ file_type exr
+ version 3
+ name Write3
+ xpos -142
+ ypos -295
+}
+push $N6148c80
+Write {
+ file SHDiffuseLight_Full_%02d.exr
+ raw true
+ file_type exr
+ version 5
  name Write2
- selected true
  xpos -604
  ypos -281
+}
+push $N60cda70
+Write {
+ file SphereLit%01d.exr
+ file_type exr
+ version 6
+ name Write1
+ xpos -202
+ ypos -256
 }
