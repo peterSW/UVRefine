@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
                 ("NWFS", "Use normal dot proir full search.")
                 ("normWeight", po::value<float>()->default_value(0.001), "The weighting of the normal.")
                 ("N4S", "Use iterative nearest 4 search.")
-                ("YOnly", "Search only in Y axis.");
+                ("yOnly", "Search only in Y axis.");
 
 
     po::variables_map vm;
