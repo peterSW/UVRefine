@@ -54,23 +54,31 @@ public:
     }
 };
 
-template<typename DiffFunctor>
+template<typename DiffFunctor, bool yOnly>
 struct FullSearch
 {
-   void search(Index2D &index,  const Imf::Rgba &target, const ImageRgba &searchImage) const
+    void search(Index2D &index,  const Imf::Rgba &target, const ImageRgba &searchImage) const
    {
        float curBestScore(DiffFunctor()(target,searchImage[index]));
        for(int y(0); y < searchImage.height; ++y)
        {
-           for(int x(0); x < searchImage.width; ++x)
+           if(yOnly)
            {
+               int x(index.x);
                testIndex<DiffFunctor>(Index2D(x,y), curBestScore, index, target, searchImage);
+           }
+           else
+           {
+               for(int x(0); x < searchImage.width; ++x)
+               {
+                   testIndex<DiffFunctor>(Index2D(x,y), curBestScore, index, target, searchImage);
+               }
            }
        }
    }
 };
 
-template<typename DiffFunctor>
+template<typename DiffFunctor, bool yOnly>
 struct NormDotWeightedFullSearch
 {
 
@@ -88,7 +96,10 @@ struct NormDotWeightedFullSearch
        float curBestScore(DiffFunctor()(target,searchImage[index]));
        for(int y(0); y < searchImage.height; ++y)
        {
-           for(int x(0); x < searchImage.width; ++x)
+           for(
+               int x(yOnly?index.x:0);
+               x < (yOnly?index.x+1:searchImage.width);
+               ++x)
            {
                Index2D indexUT(x,y);
 
@@ -199,7 +210,8 @@ int main(int argc, char *argv[])
                 ("FS", "Use full search.")
                 ("NWFS", "Use normal dot proir full search.")
                 ("normWeight", po::value<float>()->default_value(0.001), "The weighting of the normal.")
-                ("N4S", "Use iterative nearest 4 search.");
+                ("N4S", "Use iterative nearest 4 search.")
+                ("YOnly", "Search only in Y axis.");
 
 
     po::variables_map vm;
@@ -230,16 +242,29 @@ int main(int argc, char *argv[])
 
         if(vm.count("FS"))
         {
-            BestMatchSearchPixelFunctor<FullSearch<RgbSumSqrDiff> > uvSearchFunctor(
-                    diffuseIllum);
-            refineAllUVs(curUVImage, observedShad, uvSearchFunctor);
+            if(vm.count("yOnly"))
+            {
+                BestMatchSearchPixelFunctor<FullSearch<RgbSumSqrDiff, true> > uvSearchFunctor(
+                        diffuseIllum);
+                refineAllUVs(curUVImage, observedShad, uvSearchFunctor);
+            }
+            else
+            {
+                BestMatchSearchPixelFunctor<FullSearch<RgbSumSqrDiff, false> > uvSearchFunctor(
+                                        diffuseIllum);
+                refineAllUVs(curUVImage, observedShad, uvSearchFunctor);
+            }
+
         }
         else if(vm.count("NWFS"))
         {
-            BestMatchSearchPixelFunctor<NormDotWeightedFullSearch<RgbSumSqrDiff> > uvSearchFunctor(
-                    diffuseIllum,
-                    NormDotWeightedFullSearch<RgbSumSqrDiff>(vm["normWeight"].as<float>()));
-            refineAllUVs(curUVImage, observedShad, uvSearchFunctor);
+            if(vm.count("yOnly"))
+            {
+                BestMatchSearchPixelFunctor<NormDotWeightedFullSearch<RgbSumSqrDiff, true> > uvSearchFunctor(
+                        diffuseIllum,
+                        NormDotWeightedFullSearch<RgbSumSqrDiff, true>(vm["normWeight"].as<float>()));
+                refineAllUVs(curUVImage, observedShad, uvSearchFunctor);
+            }
         }
         else if(vm.count("N4S"))
         {
