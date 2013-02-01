@@ -265,6 +265,13 @@ int main(int argc, char *argv[])
                         NormDotWeightedFullSearch<RgbSumSqrDiff, true>(vm["normWeight"].as<float>()));
                 refineAllUVs(curUVImage, observedShad, uvSearchFunctor);
             }
+            else
+            {
+                BestMatchSearchPixelFunctor<NormDotWeightedFullSearch<RgbSumSqrDiff, false> > uvSearchFunctor(
+                        diffuseIllum,
+                        NormDotWeightedFullSearch<RgbSumSqrDiff, false>(vm["normWeight"].as<float>()));
+                refineAllUVs(curUVImage, observedShad, uvSearchFunctor);
+            }
         }
         else if(vm.count("N4S"))
         {
