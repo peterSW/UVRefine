@@ -192,7 +192,7 @@ void refineAllUVs(
         for(int x(0); x < observedShad.width; ++x)
         {
             const ImageRgba::PixelT &curUVPixel(curUVImage[y][x]);
-            if(curUVPixel.r && curUVPixel.g && curUVPixel.b)
+            if(curUVPixel.r || curUVPixel.g || curUVPixel.b)
             {
                 uvSearchFunctor(curUVImage[y][x], observedShad[y][x]);
             }
