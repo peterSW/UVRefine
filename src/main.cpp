@@ -109,7 +109,7 @@ struct NormDotWeightedFullSearch
                    float normAngle(angularDist(priorNormal, WorldUVToNormal(searchImage.convertIndex2UV(indexUT))));
 //                   cout << "D: " << shadDiff << "  A: " << normAngle << endl;
 
-                   float scoreUT(shadDiff + normAngle/100.0);
+                   float scoreUT(shadDiff + normAngle*m_normWeight);
                    if(scoreUT < curBestScore)
                    {
                        index = indexUT;
